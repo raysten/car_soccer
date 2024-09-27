@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 4e9d19e15df309a43ab4c01401657abd
+labels:
+- FusionCodeDoc
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267958
+  packageName: Photon Fusion
+  packageVersion: 2.0.3
+  assetPath: Assets/Photon/Fusion/Assemblies/Fusion.Sockets.xml
+  uploadId: 691755
