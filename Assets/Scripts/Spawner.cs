@@ -3,61 +3,13 @@ using System.Collections.Generic;
 using Fusion;
 using Fusion.Sockets;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
 {
-    [SerializeField] private NetworkPrefabRef _playerPrefab;
-    
+    [SerializeField]
+    private NetworkPrefabRef _playerPrefab;
+
     private Dictionary<PlayerRef, NetworkObject> _spawnedCharacters = new();
-    private NetworkRunner _runner;
-
-    public void HostAGame()
-    {
-        StartGame(GameMode.Host);
-    }
-
-    // @todo: extract starting game and creating runner to separate class
-    private async void StartGame(GameMode mode)
-    {
-        _runner = CreateRunner();
-        var scene = CreateSceneRef();
-
-        // Start or join (depends on gamemode) a session with a specific name
-        await _runner.StartGame(new StartGameArgs
-                                {
-                                    GameMode = mode,
-                                    SessionName = "TestRoom",
-                                    Scene = scene,
-                                    SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
-                                });
-    }
-
-    private NetworkRunner CreateRunner()
-    {
-        var runner = gameObject.AddComponent<NetworkRunner>();
-        runner.ProvideInput = true;
-
-        return runner;
-    }
-
-    private SceneRef CreateSceneRef()
-    {
-        var scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex);
-        var sceneInfo = new NetworkSceneInfo();
-
-        if (scene.IsValid)
-        {
-            sceneInfo.AddSceneRef(scene, LoadSceneMode.Additive);
-        }
-
-        return scene;
-    }
-
-    public void JoinGame()
-    {
-        StartGame(GameMode.Client);
-    }
 
     #region NetworkCallbacks
 
@@ -71,7 +23,9 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     {
         if (runner.IsServer)
         {
-            var spawnPosition = new Vector3(player.RawEncoded % runner.Config.Simulation.PlayerCount * 3, 1, 0); // @todo: why 3?
+            var spawnPosition =
+                new Vector3(player.RawEncoded % runner.Config.Simulation.PlayerCount * 3, 1, 0); // @todo: why 3?
+
             var networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
             _spawnedCharacters.Add(player, networkPlayerObject);
         }
@@ -92,16 +46,24 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
         var data = new NetworkInputData();
 
         if (Input.GetKey(KeyCode.W))
+        {
             data.direction += Vector3.forward;
+        }
 
         if (Input.GetKey(KeyCode.S))
+        {
             data.direction += Vector3.back;
+        }
 
         if (Input.GetKey(KeyCode.A))
+        {
             data.direction += Vector3.left;
+        }
 
         if (Input.GetKey(KeyCode.D))
+        {
             data.direction += Vector3.right;
+        }
 
         input.Set(data);
     }
