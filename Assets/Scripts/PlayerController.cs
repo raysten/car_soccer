@@ -6,6 +6,9 @@ public class PlayerController : NetworkBehaviour
     [SerializeField]
     private NetworkCharacterController _characterController;
 
+    [SerializeField]
+    private float _speed = 10f;
+
     private void Reset()
     {
         _characterController = GetComponent<NetworkCharacterController>();
@@ -16,7 +19,7 @@ public class PlayerController : NetworkBehaviour
         if (GetInput(out NetworkInputData data))
         {
             data.direction.Normalize();
-            _characterController.Move(5 * data.direction * Runner.DeltaTime);
+            _characterController.Move(_speed * data.direction * Runner.DeltaTime);
         }
     }
 }
