@@ -9,7 +9,11 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     [SerializeField]
     private NetworkPrefabRef _playerPrefab;
 
+    [SerializeField]
+    private NetworkBehaviour _ballPrefab;
+
     private Dictionary<PlayerRef, NetworkObject> _spawnedCharacters = new();
+    private NetworkBehaviour _ballInstance;
 
     #region NetworkCallbacks
 
@@ -24,10 +28,16 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
         if (runner.IsServer)
         {
             var spawnPosition =
-                new Vector3(player.RawEncoded % runner.Config.Simulation.PlayerCount * 3, 1, 0); // @todo: why 3?
+                new Vector3(player.RawEncoded % runner.Config.Simulation.PlayerCount * 3, 1, 0); // @todo: why 3?, whats rawEncoded etc?
 
             var networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
             _spawnedCharacters.Add(player, networkPlayerObject);
+
+            // @todo: how to spawn ball once?
+            if (_ballInstance == null)
+            {
+                _ballInstance = runner.Spawn(_ballPrefab);
+            }
         }
     }
 

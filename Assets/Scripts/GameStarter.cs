@@ -1,4 +1,5 @@
 ﻿using Fusion;
+using Fusion.Addons.Physics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -29,6 +30,8 @@ public class GameStarter : MonoBehaviour
     {
         var runner = gameObject.AddComponent<NetworkRunner>();
         runner.ProvideInput = true;
+
+        gameObject.AddComponent<RunnerSimulatePhysics3D>();
 
         return runner;
     }
