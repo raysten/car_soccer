@@ -28,7 +28,7 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
         if (runner.IsServer)
         {
             var spawnPosition =
-                new Vector3(player.RawEncoded % runner.Config.Simulation.PlayerCount * 3, 1, 0); // @todo: why 3?, whats rawEncoded etc?
+                new Vector3(player.RawEncoded % runner.Config.Simulation.PlayerCount * 3, 0, 0); // @todo: why 3?, whats rawEncoded etc?
 
             var networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
             _spawnedCharacters.Add(player, networkPlayerObject);

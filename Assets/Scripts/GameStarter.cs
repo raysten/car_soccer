@@ -5,8 +5,12 @@ using UnityEngine.SceneManagement;
 
 public class GameStarter : MonoBehaviour
 {
-    private NetworkRunner _runner; // @todo: not really needed cached
-
+    [SerializeField]
+    private NetworkRunner _runner;
+    
+    [SerializeField]
+    private RunnerSimulatePhysics3D _runnerSimulatePhysics;
+    
     public void HostAGame()
     {
         StartGame(GameMode.Host);
@@ -14,7 +18,7 @@ public class GameStarter : MonoBehaviour
 
     private async void StartGame(GameMode mode)
     {
-        _runner = CreateRunner();
+        _runner.ProvideInput = true;
         var scene = CreateSceneRef();
 
         await _runner.StartGame(new StartGameArgs
@@ -24,16 +28,6 @@ public class GameStarter : MonoBehaviour
                                     Scene = scene,
                                     SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
                                 });
-    }
-
-    private NetworkRunner CreateRunner()
-    {
-        var runner = gameObject.AddComponent<NetworkRunner>();
-        runner.ProvideInput = true;
-
-        gameObject.AddComponent<RunnerSimulatePhysics3D>();
-
-        return runner;
     }
 
     private SceneRef CreateSceneRef()
