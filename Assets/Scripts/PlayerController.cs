@@ -4,22 +4,22 @@ using UnityEngine;
 public class PlayerController : NetworkBehaviour
 {
     [SerializeField]
-    private NetworkCharacterController _characterController;
-
-    [SerializeField]
     private float _speed = 10f;
 
-    private void Reset()
-    {
-        _characterController = GetComponent<NetworkCharacterController>();
-    }
+    [SerializeField]
+    private Rigidbody _rigidbody;
+    
+    [Networked]
+    private NetworkInputData Inputs { get; set; }
 
     public override void FixedUpdateNetwork()
     {
         if (GetInput(out NetworkInputData data))
         {
-            data.direction.Normalize();
-            _characterController.Move(_speed * data.direction * Runner.DeltaTime);
+            Inputs = data;
+            
+            Inputs.direction.Normalize();
+            _rigidbody.velocity = _speed * Inputs.direction;
         }
     }
 }
