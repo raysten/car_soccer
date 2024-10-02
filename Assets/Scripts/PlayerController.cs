@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Fusion;
+﻿using Fusion;
 using UnityEngine;
 
 public class PlayerController : NetworkBehaviour
@@ -35,46 +34,52 @@ public class PlayerController : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
+        SimulateOnServer();
+    }
+
+    private void SimulateOnServer()
+    {
         if (GetInput(out NetworkInputData data) && HasStateAuthority)
         {
-            data.direction.Normalize();
-            _rigidbody.velocity = _speed * data.direction;
-
-            NetworkedPosition = _rigidbody.position;
-            NetworkedRotation = _rigidbody.rotation;
+            MovePlayer(data);
+            CacheNetworkedOrientation();
         }
+    }
+
+    private void MovePlayer(NetworkInputData data)
+    {
+        data.direction.Normalize();
+        _rigidbody.velocity = _speed * data.direction;
+    }
+
+    private void CacheNetworkedOrientation()
+    {
+        NetworkedPosition = _rigidbody.position;
+        NetworkedRotation = _rigidbody.rotation;
     }
 
     public override void Render()
     {
         base.Render();
-        
-        // for some reason rigidbody is not synced with server when on client with input authority, so I'm interpolating the view manually
+
+        InterpolateLocalClient();
+    }
+
+    /// <summary>
+    /// Interpolation is very basic as I expected it to be a built-in feature,
+    /// but for some reason rigidbody is not synced with server if client has input authority
+    /// Some people mention it as a bug on Photon's discord and devs haven't responded to it so this is my simple workaround
+    /// </summary>
+    private void InterpolateLocalClient()
+    {
         if (HasInputAuthority && HasStateAuthority == false)
         {
-             DetectChanges();
-            
-             _interpolationTimer += Time.deltaTime;
-             var interpolationValue = Mathf.Clamp01(_interpolationTimer / Runner.DeltaTime);
-             
-             if (interpolationValue >= 1f)
-             {
-                 _interpolationTimer = 0f;
-                 _previousPosition = _currentPosition;
-                 _previousRotation = _currentRotation;
-             }
-             
-             _interpolationTarget.position =
-                 Vector3.Lerp(_previousPosition, _currentPosition, interpolationValue);
-             
-             _interpolationTarget.rotation =
-                 Quaternion.Slerp(_previousRotation, _currentRotation, interpolationValue);
-             
-             UiDebug.Instance.WriteText($"{interpolationValue}");
+            DetectNetworkedRigidBodyChanges();
+            Interpolate();
         }
     }
 
-    private void DetectChanges()
+    private void DetectNetworkedRigidBodyChanges()
     {
         foreach (var propertyName in _changeDetector.DetectChanges(this, out var previousBuffer, out var currentBuffer))
         {
@@ -92,5 +97,21 @@ public class PlayerController : NetworkBehaviour
                     break;
             }
         }
+    }
+
+    private void Interpolate()
+    {
+        _interpolationTimer += Time.deltaTime;
+        var interpolationValue = Mathf.Clamp01(_interpolationTimer / Runner.DeltaTime);
+
+        if (interpolationValue >= 1f)
+        {
+            _interpolationTimer = 0f;
+            _previousPosition = _currentPosition;
+            _previousRotation = _currentRotation;
+        }
+
+        _interpolationTarget.position = Vector3.Lerp(_previousPosition, _currentPosition, interpolationValue);
+        _interpolationTarget.rotation = Quaternion.Slerp(_previousRotation, _currentRotation, interpolationValue);
     }
 }
