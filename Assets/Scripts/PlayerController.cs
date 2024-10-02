@@ -4,7 +4,13 @@ using UnityEngine;
 public class PlayerController : NetworkBehaviour
 {
     [SerializeField]
-    private float _speed = 10f;
+    private float _forwardSpeed = 10f;
+
+    [SerializeField]
+    private float _reverseSpeed = 1f;
+
+    [SerializeField]
+    private float _rotationSpeed = 5f;
 
     [SerializeField]
     private Rigidbody _rigidbody;
@@ -46,10 +52,38 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    private void MovePlayer(NetworkInputData data)
+    // @todo: refactor
+    private void MovePlayer(NetworkInputData inputData)
     {
-        data.direction.Normalize();
-        _rigidbody.velocity = _speed * data.direction;
+        var moveInput = inputData.moveInput;
+        
+        if (moveInput > 0) 
+        {
+            _rigidbody.AddForce(transform.forward * moveInput * _forwardSpeed, ForceMode.Acceleration);
+            
+        }
+        else if (moveInput < 0)
+        {
+            _rigidbody.AddForce(-transform.forward * _reverseSpeed, ForceMode.Acceleration);
+        }
+        
+        Rotate(inputData.steerInput);
+    }
+
+    private void Rotate(float steerInput)
+    {
+        if (_rigidbody.velocity.magnitude > 0.01f) // @todo: param or const
+        {
+            var verticalDirectionFactor = CalculateVerticalDirectionFactor();
+            _rigidbody.MoveRotation(_rigidbody.rotation * Quaternion.Euler(new Vector3(0f, steerInput * verticalDirectionFactor * _rotationSpeed * Runner.DeltaTime, 0f)));
+        }
+    }
+
+    private float CalculateVerticalDirectionFactor()
+    {
+        var dotProduct = Vector3.Dot(_rigidbody.velocity, transform.forward);
+        
+        return dotProduct > 0 ? 1f : dotProduct == 0 ? 0f : -1f;
     }
 
     private void CacheNetworkedOrientation()
