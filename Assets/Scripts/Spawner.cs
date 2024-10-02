@@ -11,10 +11,10 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     private NetworkPrefabRef _playerPrefab;
 
     [SerializeField]
-    private NetworkBehaviour _ballPrefab;
+    private Ball _ballPrefab;
 
     private Dictionary<PlayerRef, NetworkObject> _spawnedCharacters = new();
-    private NetworkBehaviour _ballInstance;
+    private Ball _ballInstance;
 
     #region NetworkCallbacks
 
@@ -34,11 +34,25 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
             var networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
             _spawnedCharacters.Add(player, networkPlayerObject);
 
-            // @todo: how to spawn ball once?
-            if (_ballInstance == null)
-            {
-                _ballInstance = runner.Spawn(_ballPrefab);
-            }
+            SpawnBall(runner);
+        }
+    }
+
+    private void SpawnBall(NetworkRunner runner)
+    {
+        if (_ballInstance == null)
+        {
+            _ballInstance = runner.Spawn(_ballPrefab);
+            _ballInstance.OnEnteredGoal += GoalScored;
+        }
+
+        void GoalScored()
+        {
+            _ballInstance.OnEnteredGoal -= GoalScored;
+            runner.Despawn(_ballInstance.Object);
+            _ballInstance = null;
+
+            SpawnBall(runner);
         }
     }
 
@@ -69,7 +83,9 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     { }
 
     public void OnConnectedToServer(NetworkRunner runner)
-    { }
+    {
+        Debug.LogError($"On connected to server, runner: {runner}");
+    }
 
     public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason)
     { }
