@@ -1,4 +1,5 @@
-﻿using Player;
+﻿using Ball;
+using Player;
 using UnityEngine;
 using Zenject;
 
@@ -8,10 +9,14 @@ namespace DependencyInjection
     {
         [SerializeField]
         private PlayerSpawner _playerSpawner;
+
+        [SerializeField]
+        private BallSpawner _ballSpawner;
         
         public override void InstallBindings()
         {
             BindInterfacesFromInstance(_playerSpawner);
+            BindInterfacesFromInstance(_ballSpawner);
         }
         
         private void BindInterfacesFromInstance<T>(T instance)
