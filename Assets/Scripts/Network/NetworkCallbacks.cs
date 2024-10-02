@@ -13,12 +13,14 @@ namespace Network
     {
         private IPlayerSpawner _playerSpawner;
         private IBallSpawner _ballSpawner;
+        private IInputSampler _inputSampler;
 
         [Inject]
-        private void Construct(IPlayerSpawner playerSpawner, IBallSpawner ballSpawner)
+        private void Construct(IPlayerSpawner playerSpawner, IBallSpawner ballSpawner, IInputSampler inputSampler)
         {
             _playerSpawner = playerSpawner;
             _ballSpawner = ballSpawner;
+            _inputSampler = inputSampler;
         }
 
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
@@ -40,13 +42,7 @@ namespace Network
 
         public void OnInput(NetworkRunner runner, NetworkInput input)
         {
-            var data = new NetworkInputData
-                       {
-                           moveInput = Input.GetAxis("Vertical"),
-                           steerInput = Input.GetAxis("Horizontal")
-                       };
-
-            input.Set(data);
+            input.Set(_inputSampler.SampleInput());
         }
 
         #region UnusedNetworkCallbacks
