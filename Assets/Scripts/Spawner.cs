@@ -4,6 +4,7 @@ using Fusion;
 using Fusion.Sockets;
 using UnityEngine;
 
+// @todo: class name is wrong as it also samples input
 public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
 {
     [SerializeField]
@@ -55,26 +56,9 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
         // @todo: refactor, extract input system
         var data = new NetworkInputData();
 
-        if (Input.GetKey(KeyCode.W))
-        {
-            data.direction += Vector3.forward;
-        }
-
-        if (Input.GetKey(KeyCode.S))
-        {
-            data.direction += Vector3.back;
-        }
-
-        if (Input.GetKey(KeyCode.A))
-        {
-            data.direction += Vector3.left;
-        }
-
-        if (Input.GetKey(KeyCode.D))
-        {
-            data.direction += Vector3.right;
-        }
-
+        data.moveInput = Input.GetAxis("Vertical");
+        data.steerInput = Input.GetAxis("Horizontal");
+        
         input.Set(data);
     }
 
