@@ -1,6 +1,6 @@
 using Fusion;
 
-namespace Ball
+namespace Soccer
 {
     public interface IBallSpawner
     {

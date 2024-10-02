@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Ball;
 using Fusion;
 using Fusion.Sockets;
 using Player;
+using Soccer;
 using UnityEngine;
 using Zenject;
 

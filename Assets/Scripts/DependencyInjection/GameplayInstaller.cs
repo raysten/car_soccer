@@ -1,6 +1,6 @@
-﻿using Ball;
-using Network;
+﻿using Network;
 using Player;
+using Soccer;
 using UnityEngine;
 using Zenject;
 
@@ -19,6 +19,7 @@ namespace DependencyInjection
             BindInterfacesFromInstance(_playerSpawner);
             BindInterfacesFromInstance(_ballSpawner);
             BindInterfacesTo<InputSampler>();
+            BindInterfacesTo<Score>();
         }
         
         private void BindInterfacesFromInstance<T>(T instance)
