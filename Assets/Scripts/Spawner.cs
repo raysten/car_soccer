@@ -2,29 +2,30 @@ using System;
 using System.Collections.Generic;
 using Fusion;
 using Fusion.Sockets;
+using Player;
 using UnityEngine;
+using Zenject;
 
 public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
 {
     [SerializeField]
-    private NetworkPrefabRef _playerPrefab;
-
-    [SerializeField]
     private Ball _ballPrefab;
 
-    private Dictionary<PlayerRef, NetworkObject> _spawnedCharacters = new();
     private Ball _ballInstance;
+    
+    private IPlayerSpawner _playerSpawner;
 
-
+    [Inject]
+    private void Construct(IPlayerSpawner playerSpawner)
+    {
+        _playerSpawner = playerSpawner;
+    }
+    
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
         if (runner.IsServer)
         {
-            var spawnPosition =
-                new Vector3(player.RawEncoded % runner.Config.Simulation.PlayerCount * 3, 0, 0); // @todo: why 3?, whats rawEncoded etc?
-
-            var networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
-            _spawnedCharacters.Add(player, networkPlayerObject);
+            _playerSpawner.SpawnPlayer(runner, player);
 
             SpawnBall(runner);
         }
@@ -50,10 +51,9 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
     {
-        if (_spawnedCharacters.TryGetValue(player, out var networkObject))
+        if (runner.IsServer)
         {
-            runner.Despawn(networkObject);
-            _spawnedCharacters.Remove(player);
+            _playerSpawner.DespawnPlayer(runner, player);
         }
     }
 
