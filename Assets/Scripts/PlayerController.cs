@@ -1,6 +1,7 @@
 ﻿using Fusion;
 using UnityEngine;
 
+// @todo: extract separate class for interpolation?
 public class PlayerController : NetworkBehaviour
 {
     [SerializeField]
@@ -11,6 +12,9 @@ public class PlayerController : NetworkBehaviour
 
     [SerializeField]
     private float _rotationSpeed = 5f;
+
+    [SerializeField]
+    private float _minimumVelocityToRotate = 0.01f;
 
     [SerializeField]
     private Rigidbody _rigidbody;
@@ -52,11 +56,16 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    // @todo: refactor
     private void MovePlayer(NetworkInputData inputData)
     {
         var moveInput = inputData.moveInput;
         
+        MoveVertically(moveInput);
+        Rotate(inputData.steerInput);
+    }
+
+    private void MoveVertically(float moveInput)
+    {
         if (moveInput > 0) 
         {
             _rigidbody.AddForce(transform.forward * moveInput * _forwardSpeed, ForceMode.Acceleration);
@@ -66,16 +75,17 @@ public class PlayerController : NetworkBehaviour
         {
             _rigidbody.AddForce(-transform.forward * _reverseSpeed, ForceMode.Acceleration);
         }
-        
-        Rotate(inputData.steerInput);
     }
 
     private void Rotate(float steerInput)
     {
-        if (_rigidbody.velocity.magnitude > 0.01f) // @todo: param or const
+        if (_rigidbody.velocity.magnitude > _minimumVelocityToRotate)
         {
             var verticalDirectionFactor = CalculateVerticalDirectionFactor();
-            _rigidbody.MoveRotation(_rigidbody.rotation * Quaternion.Euler(new Vector3(0f, steerInput * verticalDirectionFactor * _rotationSpeed * Runner.DeltaTime, 0f)));
+            var rotationValue = steerInput * verticalDirectionFactor * _rotationSpeed * Runner.DeltaTime;
+            var rotationAroundYAxis = Quaternion.Euler(new Vector3(0f, rotationValue, 0f));
+            
+            _rigidbody.MoveRotation(_rigidbody.rotation * rotationAroundYAxis);
         }
     }
 
