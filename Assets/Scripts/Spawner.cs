@@ -4,7 +4,6 @@ using Fusion;
 using Fusion.Sockets;
 using UnityEngine;
 
-// @todo: class name is wrong as it also samples input
 public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
 {
     [SerializeField]
@@ -16,13 +15,6 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     private Dictionary<PlayerRef, NetworkObject> _spawnedCharacters = new();
     private Ball _ballInstance;
 
-    #region NetworkCallbacks
-
-    public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
-    { }
-
-    public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
-    { }
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
@@ -67,14 +59,21 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnInput(NetworkRunner runner, NetworkInput input)
     {
-        // @todo: refactor, extract input system
-        var data = new NetworkInputData();
+        var data = new NetworkInputData
+                   {
+                       moveInput = Input.GetAxis("Vertical"),
+                       steerInput = Input.GetAxis("Horizontal")
+                   };
 
-        data.moveInput = Input.GetAxis("Vertical");
-        data.steerInput = Input.GetAxis("Horizontal");
-        
         input.Set(data);
     }
+
+    #region UnusedNetworkCallbacks
+    public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
+    { }
+
+    public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
+    { }
 
     public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input)
     { }
@@ -83,9 +82,7 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     { }
 
     public void OnConnectedToServer(NetworkRunner runner)
-    {
-        Debug.LogError($"On connected to server, runner: {runner}");
-    }
+    { }
 
     public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason)
     { }

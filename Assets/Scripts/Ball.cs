@@ -8,7 +8,7 @@ public class Ball : NetworkBehaviour
     
     private void OnTriggerStay(Collider otherCollider)
     {
-        if (otherCollider.gameObject.layer == Constants.GOAL_LAYER)
+        if (HasStateAuthority && otherCollider.gameObject.layer == Constants.GOAL_LAYER)
         {
             OnEnteredGoal?.Invoke();
         }
