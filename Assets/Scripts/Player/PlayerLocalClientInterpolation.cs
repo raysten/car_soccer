@@ -1,24 +1,10 @@
 ﻿using Fusion;
-using Network;
 using UnityEngine;
 
-// @todo: extract separate class for interpolation?
 namespace Player
 {
-    public class PlayerController : NetworkBehaviour
+    public class PlayerLocalClientInterpolation : NetworkBehaviour
     {
-        [SerializeField]
-        private float _forwardSpeed = 10f;
-
-        [SerializeField]
-        private float _reverseSpeed = 1f;
-
-        [SerializeField]
-        private float _rotationSpeed = 5f;
-
-        [SerializeField]
-        private float _minimumVelocityToRotate = 0.01f;
-
         [SerializeField]
         private Rigidbody _rigidbody;
 
@@ -27,12 +13,13 @@ namespace Player
 
         private ChangeDetector _changeDetector;
 
+        private float _interpolationTimer;
+
         private Vector3 _previousPosition;
         private Vector3 _currentPosition;
+
         private Quaternion _previousRotation;
         private Quaternion _currentRotation;
-
-        private float _interpolationTimer;
 
         [Networked]
         private Vector3 NetworkedPosition { get; set; }
@@ -58,55 +45,10 @@ namespace Player
 
         public override void FixedUpdateNetwork()
         {
-            SimulateOnServer();
-        }
-
-        private void SimulateOnServer()
-        {
-            if (GetInput(out NetworkInputData data) && HasStateAuthority)
+            if (HasStateAuthority)
             {
-                MovePlayer(data);
                 CacheNetworkedOrientation();
             }
-        }
-
-        private void MovePlayer(NetworkInputData inputData)
-        {
-            var moveInput = inputData.moveInput;
-
-            MoveVertically(moveInput);
-            Rotate(inputData.steerInput);
-        }
-
-        private void MoveVertically(float moveInput)
-        {
-            if (moveInput > 0)
-            {
-                _rigidbody.AddForce(transform.forward * moveInput * _forwardSpeed, ForceMode.Acceleration);
-            }
-            else if (moveInput < 0)
-            {
-                _rigidbody.AddForce(-transform.forward * _reverseSpeed, ForceMode.Acceleration);
-            }
-        }
-
-        private void Rotate(float steerInput)
-        {
-            if (_rigidbody.velocity.magnitude > _minimumVelocityToRotate)
-            {
-                var verticalDirectionFactor = CalculateVerticalDirectionFactor();
-                var rotationValue = steerInput * verticalDirectionFactor * _rotationSpeed * Runner.DeltaTime;
-                var rotationAroundYAxis = Quaternion.Euler(new Vector3(0f, rotationValue, 0f));
-
-                _rigidbody.MoveRotation(_rigidbody.rotation * rotationAroundYAxis);
-            }
-        }
-
-        private float CalculateVerticalDirectionFactor()
-        {
-            var dotProduct = Vector3.Dot(_rigidbody.velocity, transform.forward);
-
-            return dotProduct > 0 ? 1f : dotProduct == 0 ? 0f : -1f;
         }
 
         public override void Render()
@@ -133,8 +75,9 @@ namespace Player
 
         private void DetectNetworkedRigidBodyChanges()
         {
-            foreach (var propertyName in _changeDetector.DetectChanges(this, out var previousBuffer,
-                                                                       out var currentBuffer))
+            var changedProperties = _changeDetector.DetectChanges(this, out var previousBuffer, out var currentBuffer);
+
+            foreach (var propertyName in changedProperties)
             {
                 switch (propertyName)
                 {
