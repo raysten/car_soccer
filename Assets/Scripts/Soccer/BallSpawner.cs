@@ -11,12 +11,14 @@ namespace Soccer
 
         private SoccerBall _ballInstance;
         
-        private IScoreProvider _scoreProvider;
+        private IScore _score;
+        private NetworkRunner _networkRunner;
 
         [Inject]
-        private void Construct(IScoreProvider scoreProvider)
+        private void Construct(IScore score, NetworkRunner networkRunner)
         {
-            _scoreProvider = scoreProvider;
+            _score = score;
+            _networkRunner = networkRunner;
         }
 
         public void SpawnBall(NetworkRunner runner)
@@ -35,10 +37,15 @@ namespace Soccer
                 runner.Despawn(_ballInstance.Object);
                 _ballInstance = null;
                 
-                // @todo: use ScoreProvider
+                IncrementScore(team);
 
                 SpawnBall(runner);
             }
+        }
+
+        private void IncrementScore(ETeam team)
+        {
+            _score.IncrementScore(team);
         }
     }
 }

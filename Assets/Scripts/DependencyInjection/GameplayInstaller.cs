@@ -1,4 +1,5 @@
-﻿using Network;
+﻿using Fusion;
+using Network;
 using Player;
 using Soccer;
 using UnityEngine;
@@ -13,13 +14,30 @@ namespace DependencyInjection
 
         [SerializeField]
         private BallSpawner _ballSpawner;
+
+        [SerializeField]
+        private Score _score;
+
+        [SerializeField]
+        private NetworkRunner _networkRunner;
         
         public override void InstallBindings()
         {
+            BindInterfacesAndSelfFromInstance(_networkRunner);
+            
             BindInterfacesFromInstance(_playerSpawner);
             BindInterfacesFromInstance(_ballSpawner);
+            BindInterfacesFromInstance(_score);
+            
             BindInterfacesTo<InputSampler>();
-            BindInterfacesTo<Score>();
+        }
+        
+        protected void BindInterfacesAndSelfFromInstance<T>(T instance)
+        {
+            Container.BindInterfacesAndSelfTo<T>()
+                     .FromInstance(instance)
+                     .AsSingle()
+                     .NonLazy();
         }
         
         private void BindInterfacesFromInstance<T>(T instance)
