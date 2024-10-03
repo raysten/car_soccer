@@ -12,13 +12,11 @@ namespace Soccer
         private SoccerBall _ballInstance;
         
         private IScore _score;
-        private NetworkRunner _networkRunner;
 
         [Inject]
-        private void Construct(IScore score, NetworkRunner networkRunner)
+        private void Construct(IScore score)
         {
             _score = score;
-            _networkRunner = networkRunner;
         }
 
         public void SpawnBall(NetworkRunner runner)
@@ -30,22 +28,22 @@ namespace Soccer
                 _ballInstance.OnEnteredGoal += GoalScored;
             }
 
-            void GoalScored(ETeam team)
+            void GoalScored(ETeam goalTeam)
             {
                 _ballInstance.OnEnteredGoal -= GoalScored;
 
                 runner.Despawn(_ballInstance.Object);
                 _ballInstance = null;
                 
-                IncrementScore(team);
+                IncrementScore(goalTeam);
 
                 SpawnBall(runner);
             }
         }
 
-        private void IncrementScore(ETeam team)
+        private void IncrementScore(ETeam goalTeam)
         {
-            _score.IncrementScore(team);
+            _score.IncrementScore(goalTeam);
         }
     }
 }

@@ -35,20 +35,20 @@ namespace Soccer
             OnScoreChanged?.Invoke(RedTeamScore, BlueTeamScore);
         }
 
-        public void IncrementScore(ETeam team)
+        public void IncrementScore(ETeam goalTeam)
         {
             if (_networkRunner.IsServer)
             {
-                switch (team)
+                switch (goalTeam)
                 {
                     case ETeam.Red:
-                        RedTeamScore++;
-                        break;
-                    case ETeam.Blue:
                         BlueTeamScore++;
                         break;
+                    case ETeam.Blue:
+                        RedTeamScore++;
+                        break;
                     default:
-                        Debug.LogError($"Unsupported team {team}");
+                        Debug.LogError($"Unsupported team {goalTeam}");
                         break;
                 }
             }
