@@ -27,7 +27,7 @@ namespace Network
             await _networkRunner.StartGame(new StartGameArgs
                                            {
                                                GameMode = mode,
-                                               SessionName = "TestRoom",
+                                               SessionName = "PlaceholderSessionName",
                                                Scene = scene,
                                                SceneManager = _networkRunner.gameObject.AddComponent<NetworkSceneManagerDefault>()
                                            });

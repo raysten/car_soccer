@@ -8,6 +8,8 @@ namespace Player
 {
     public class PlayerSpawner : MonoBehaviour, IPlayerSpawner
     {
+        private const float SPAWN_SPACING = 3f;
+        
         [SerializeField]
         private Player _redPlayerPrefab;
 
@@ -32,7 +34,9 @@ namespace Player
 
         private Vector3 CalculateSpawnPositionForNextPlayer(NetworkRunner runner, PlayerRef player)
         {
-            var spawnPosition = new Vector3(player.RawEncoded % runner.Config.Simulation.PlayerCount * 3, 0, 0);
+            var xPosition = player.RawEncoded % runner.Config.Simulation.PlayerCount * SPAWN_SPACING;
+            var spawnPosition = new Vector3(xPosition, 0, 0);
+            
             return spawnPosition;
         }
 

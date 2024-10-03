@@ -5,11 +5,12 @@ using Zenject;
 
 namespace Soccer
 {
-    public class Score : NetworkBehaviour, IScore, IScoreEvents
+    public class Score : NetworkBehaviour, IScoreEvents
     {
         public event Action<int, int> OnScoreChanged;
 
         private NetworkRunner _networkRunner;
+        private IBallEvents _ballEvents;
 
         [Networked, OnChangedRender(nameof(NotifyAboutScoreChange))]
         public int RedTeamScore { get; set; }
@@ -18,9 +19,10 @@ namespace Soccer
         public int BlueTeamScore { get; set; }
 
         [Inject]
-        private void Construct(NetworkRunner networkRunner)
+        private void Construct(NetworkRunner networkRunner, IBallEvents ballEvents)
         {
             _networkRunner = networkRunner;
+            _ballEvents = ballEvents;
         }
 
         public override void Spawned()
@@ -28,6 +30,7 @@ namespace Soccer
             base.Spawned();
 
             NotifyAboutScoreChange();
+            _ballEvents.OnBallEnteredGoal += IncrementScore;
         }
 
         private void NotifyAboutScoreChange()
@@ -52,6 +55,13 @@ namespace Soccer
                         break;
                 }
             }
+        }
+
+        public override void Despawned(NetworkRunner runner, bool hasState)
+        {
+            base.Despawned(runner, hasState);
+            
+            _ballEvents.OnBallEnteredGoal -= IncrementScore;
         }
     }
 }

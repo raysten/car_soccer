@@ -1,23 +1,17 @@
-﻿using Fusion;
+﻿using System;
+using Fusion;
 using UnityEngine;
-using Zenject;
 
 namespace Soccer
 {
-    public class BallSpawner : MonoBehaviour, IBallSpawner
+    public class BallSpawner : MonoBehaviour, IBallSpawner, IBallEvents
     {
+        public event Action<ETeam> OnBallEnteredGoal;
+
         [SerializeField]
         private SoccerBall _ballPrefab;
 
         private SoccerBall _ballInstance;
-        
-        private IScore _score;
-
-        [Inject]
-        private void Construct(IScore score)
-        {
-            _score = score;
-        }
 
         public void SpawnBall(NetworkRunner runner)
         {
@@ -34,16 +28,11 @@ namespace Soccer
 
                 runner.Despawn(_ballInstance.Object);
                 _ballInstance = null;
-                
-                IncrementScore(goalTeam);
+
+                OnBallEnteredGoal?.Invoke(goalTeam);
 
                 SpawnBall(runner);
             }
-        }
-
-        private void IncrementScore(ETeam goalTeam)
-        {
-            _score.IncrementScore(goalTeam);
         }
     }
 }
