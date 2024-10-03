@@ -14,7 +14,7 @@ namespace Soccer
         [Networked, OnChangedRender(nameof(NotifyAboutScoreChange))]
         public int RedTeamScore { get; set; }
 
-        [Networked]
+        [Networked, OnChangedRender(nameof(NotifyAboutScoreChange))]
         public int BlueTeamScore { get; set; }
 
         [Inject]
