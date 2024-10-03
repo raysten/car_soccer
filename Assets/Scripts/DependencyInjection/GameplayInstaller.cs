@@ -23,6 +23,7 @@ namespace DependencyInjection
         
         public override void InstallBindings()
         {
+            BindInterfacesTo<GameStarter>();
             BindInterfacesAndSelfFromInstance(_networkRunner);
             
             BindInterfacesFromInstance(_playerSpawner);
@@ -31,8 +32,15 @@ namespace DependencyInjection
             
             BindInterfacesTo<InputSampler>();
         }
-        
-        protected void BindInterfacesAndSelfFromInstance<T>(T instance)
+
+        private void BindInterfacesTo<T>()
+        {
+            Container.BindInterfacesTo<T>()
+                     .AsSingle()
+                     .NonLazy();
+        }
+
+        private void BindInterfacesAndSelfFromInstance<T>(T instance)
         {
             Container.BindInterfacesAndSelfTo<T>()
                      .FromInstance(instance)
@@ -44,13 +52,6 @@ namespace DependencyInjection
         {
             Container.BindInterfacesTo<T>()
                      .FromInstance(instance)
-                     .AsSingle()
-                     .NonLazy();
-        }
-        
-        protected void BindInterfacesTo<T>()
-        {
-            Container.BindInterfacesTo<T>()
                      .AsSingle()
                      .NonLazy();
         }

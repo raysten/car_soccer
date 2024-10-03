@@ -43,6 +43,17 @@ namespace Player
         public override void Spawned()
         {
             _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+
+            if (HasStateAuthority)
+            {
+                CacheNetworkedOrientation();
+            }
+        }
+
+        private void CacheNetworkedOrientation()
+        {
+            NetworkedPosition = _rigidbody.position;
+            NetworkedRotation = _rigidbody.rotation;
         }
 
         public override void FixedUpdateNetwork()
@@ -62,17 +73,16 @@ namespace Player
         private void MovePlayer(NetworkInputData inputData)
         {
             var moveInput = inputData.moveInput;
-        
+
             MoveVertically(moveInput);
             Rotate(inputData.steerInput);
         }
 
         private void MoveVertically(float moveInput)
         {
-            if (moveInput > 0) 
+            if (moveInput > 0)
             {
                 _rigidbody.AddForce(transform.forward * moveInput * _forwardSpeed, ForceMode.Acceleration);
-            
             }
             else if (moveInput < 0)
             {
@@ -87,7 +97,7 @@ namespace Player
                 var verticalDirectionFactor = CalculateVerticalDirectionFactor();
                 var rotationValue = steerInput * verticalDirectionFactor * _rotationSpeed * Runner.DeltaTime;
                 var rotationAroundYAxis = Quaternion.Euler(new Vector3(0f, rotationValue, 0f));
-            
+
                 _rigidbody.MoveRotation(_rigidbody.rotation * rotationAroundYAxis);
             }
         }
@@ -95,14 +105,8 @@ namespace Player
         private float CalculateVerticalDirectionFactor()
         {
             var dotProduct = Vector3.Dot(_rigidbody.velocity, transform.forward);
-        
-            return dotProduct > 0 ? 1f : dotProduct == 0 ? 0f : -1f;
-        }
 
-        private void CacheNetworkedOrientation()
-        {
-            NetworkedPosition = _rigidbody.position;
-            NetworkedRotation = _rigidbody.rotation;
+            return dotProduct > 0 ? 1f : dotProduct == 0 ? 0f : -1f;
         }
 
         public override void Render()
@@ -113,9 +117,10 @@ namespace Player
         }
 
         /// <summary>
-        /// Interpolation is very basic as I expected it to be a built-in feature,
-        /// but for some reason rigidbody is not synced with server if client has input authority
-        /// Some people mention it as a bug on Photon's discord and devs haven't responded to it so this is my simple workaround
+        ///     Interpolation is very basic as I expected it to be a built-in feature,
+        ///     but for some reason rigidbody is not synced with server if client has input authority
+        ///     Some people mention it as a bug on Photon's discord and devs haven't responded to it so this is my simple
+        ///     workaround
         /// </summary>
         private void InterpolateLocalClient()
         {
@@ -128,7 +133,8 @@ namespace Player
 
         private void DetectNetworkedRigidBodyChanges()
         {
-            foreach (var propertyName in _changeDetector.DetectChanges(this, out var previousBuffer, out var currentBuffer))
+            foreach (var propertyName in _changeDetector.DetectChanges(this, out var previousBuffer,
+                                                                       out var currentBuffer))
             {
                 switch (propertyName)
                 {

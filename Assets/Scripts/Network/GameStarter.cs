@@ -1,13 +1,18 @@
 ﻿using Fusion;
-using UnityEngine;
 using UnityEngine.SceneManagement;
+using Zenject;
 
 namespace Network
 {
-    public class GameStarter : MonoBehaviour
+    public class GameStarter : IGameStarter
     {
-        [SerializeField]
-        private NetworkRunner _runner;
+        private NetworkRunner _networkRunner;
+
+        [Inject]
+        private void Construct(NetworkRunner networkRunner)
+        {
+            _networkRunner = networkRunner;
+        }
 
         public void HostAGame()
         {
@@ -16,16 +21,16 @@ namespace Network
 
         private async void StartGame(GameMode mode)
         {
-            _runner.ProvideInput = true;
+            _networkRunner.ProvideInput = true;
             var scene = CreateSceneRef();
 
-            await _runner.StartGame(new StartGameArgs
-                                    {
-                                        GameMode = mode,
-                                        SessionName = "TestRoom",
-                                        Scene = scene,
-                                        SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
-                                    });
+            await _networkRunner.StartGame(new StartGameArgs
+                                           {
+                                               GameMode = mode,
+                                               SessionName = "TestRoom",
+                                               Scene = scene,
+                                               SceneManager = _networkRunner.gameObject.AddComponent<NetworkSceneManagerDefault>()
+                                           });
         }
 
         private SceneRef CreateSceneRef()
