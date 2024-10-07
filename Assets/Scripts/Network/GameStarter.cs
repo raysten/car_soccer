@@ -1,6 +1,5 @@
 ﻿using Fusion;
 using UnityEngine.SceneManagement;
-using Zenject;
 
 namespace Network
 {
@@ -8,8 +7,7 @@ namespace Network
     {
         private NetworkRunner _networkRunner;
 
-        [Inject]
-        private void Construct(NetworkRunner networkRunner)
+        public GameStarter(NetworkRunner networkRunner)
         {
             _networkRunner = networkRunner;
         }
@@ -29,7 +27,8 @@ namespace Network
                                                GameMode = mode,
                                                SessionName = "PlaceholderSessionName",
                                                Scene = scene,
-                                               SceneManager = _networkRunner.gameObject.AddComponent<NetworkSceneManagerDefault>()
+                                               SceneManager = _networkRunner.gameObject
+                                                                            .AddComponent<NetworkSceneManagerDefault>()
                                            });
         }
 
